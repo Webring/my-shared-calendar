@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 🚫 Запрет индексации -->
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="googlebot" content="noindex, nofollow, noarchive">
+
+  <title>Моё расписание</title>
+
+  <!-- Montserrat -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Montserrat', sans-serif;
+      background: #000;
+    }
+
+    /* ===== CALENDAR ===== */
+    .calendar-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    .calendar-container iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* ===== POPUP OVERLAY ===== */
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    /* ===== POPUP ===== */
+    .popup {
+      background: #ffffff;
+      padding: 22px;
+      max-width: 420px;
+      width: 90%;
+      border-radius: 14px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .popup h2 {
+      margin: 0 0 12px;
+      font-weight: 600;
+    }
+
+    .popup p {
+      font-size: 15px;
+      line-height: 1.45;
+      margin-bottom: 18px;
+    }
+
+    .popup-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .popup-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      background: #039be5;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* ===== INFO BUTTON ===== */
+    .info-btn {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: #039be5;
+      color: #fff;
+      font-size: 22px;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 900;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+      font-family: 'Montserrat', sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- POPUP -->
+  <div class="popup-overlay" id="popup">
+    <div class="popup">
+      <h2>ℹ️ Информация</h2>
+      <p>
+        Рассписание примерное, подробнее можно узнать связавшись со мной.
+        Между мероприятиями нужен зазор в 30–60 минут.
+      </p>
+
+      <label class="popup-checkbox">
+        <input type="checkbox" id="dontShowAgain">
+        Больше не показывать
+      </label>
+
+      <button class="popup-btn" id="closePopupBtn">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- INFO BUTTON -->
+  <button class="info-btn" id="infoBtn">!</button>
+
+  <!-- CALENDAR -->
+  <div class="calendar-container">
+    <iframe
+      src="https://calendar.google.com/calendar/embed?wkst=2&ctz=Asia%2FNovosibirsk&showCalendars=0&mode=WEEK&showTitle=0&src=d2VicmluZ29mZkBnbWFpbC5jb20&src=ZmU1MGI0MjY0MGYxOTA2YmQ0NGU4Mzk1OTc1MzdhNWRkNWQyMGYzMjgwYjZmN2RhOWYzY2JhMDkyNDg4MjM5OUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=ZWVlMzdlMDk2YjJkZmQzZTAyOGUwNjY2NmVhMThkZmQyMDEyYzM2ZmIyMTg3ZDkxZTdkNDNmNWIzMTkyZDkwOUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=ZWViZWFlOTNlZjc5ZWRkMjQ4NjllYTlhOTU2NzY2ZWMyNGIyMDdlMDlkNTg2NGM5YTM2NmQxMDRiMTc2YmU5YUBncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=YjdkYjEyODhiMzA4ZWUwYzEwNTU4ODlkMTAyNjFiYmY0MTdhMjE2NWUwNmM0M2QyMjBmZGJhOGNlMDhmODY3ZEBncm91cC5jYWxlbmRhci5nb29nbGUuY29t"
+      scrolling="no"
+      allowfullscreen
+    ></iframe>
+  </div>
+
+  <!-- JS -->
+  <script>
+    const STORAGE_KEY = "hideSchedulePopup";
+
+    const popup = document.getElementById("popup");
+    const closeBtn = document.getElementById("closePopupBtn");
+    const checkbox = document.getElementById("dontShowAgain");
+    const infoBtn = document.getElementById("infoBtn");
+
+    function syncCheckbox() {
+      checkbox.checked = localStorage.getItem(STORAGE_KEY) === "true";
+    }
+
+    function openPopup() {
+      syncCheckbox();
+      popup.style.display = "flex";
+    }
+
+    function closePopup() {
+      popup.style.display = "none";
+    }
+
+    // Автопоказ
+    if (localStorage.getItem(STORAGE_KEY) !== "true") {
+      openPopup();
+    }
+
+    // Закрытие
+    closeBtn.addEventListener("click", () => {
+      if (checkbox.checked) {
+        localStorage.setItem(STORAGE_KEY, "true");
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+      closePopup();
+    });
+
+    // Принудительный вызов
+    infoBtn.addEventListener("click", openPopup);
+  </script>
+
+</body>
+</html>
